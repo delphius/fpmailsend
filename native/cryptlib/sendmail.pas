@@ -10,14 +10,12 @@ uses
   cryptlib
   ;
 
+function SendMail(const SmtpServer, SenderEmail, Password, RecipientEmail, MailSubject, MailBody: string;
+  SmtpPort: Integer): Boolean;
+
 implementation
 
 const
-  MailHost = 'smtp.gmail.com';
-  MailTo = '***@yandex.ru';
-  MailFrom = '***@gmail.com';
-  UserName = '***@gmail.com';
-  Password = '***';
   TCP_PORT = 465; // TLS
   SMTP_RESPONSE_TIMEOUT = 5000; // 5 sec response timeout
 
@@ -458,25 +456,20 @@ function SendMail(const SmtpServer, SenderEmail, Password, RecipientEmail, MailS
   SmtpPort: Integer): Boolean;
 var
   RetVal: integer;
-  sBody, sErr: string;
+  sErr: string;
 begin
-
-  sBody := '';
-  sBody := sBody + 'From: ***@gmail.com'#13#10; // $MailFrom
-  sBody := sBody + 'To: ***@yandex.ru'#13#10;
-  sBody := sBody + 'Subject: Test using TLS Encryption'#13#10#13#10;
-  sBody := sBody + 'Free Pascal version of the code created this email'; // etc etc
-
-  RetVal := SMTPTLS(MailHost,
-    UserName,
+  RetVal := SMTPTLS(SmtpServer,
+    SenderEmail,
     Password,
-    MailFrom,
-    MailTo,
-    sBody,
+    SenderEmail,
+    RecipientEmail,
+    MailBody,
     sErr);
 
   if RetVal < 0 then
     Result:=False
   else
     Result:=True;
+end;
+
 end.
