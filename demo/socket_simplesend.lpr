@@ -7,7 +7,7 @@ uses
   ;
 
 begin
-  if sendmail.SendMail('smtp.mail.ru', 'suleymanovr@mail.ru', '', 'suleymanovr@yandex.ru',
+  if sendmail.SendMail('', '', '', '',
     'Test Mail',
     'This is a test email sent using sockets.', 465) then
     WriteLn('Mail sent successfully.')
