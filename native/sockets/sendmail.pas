@@ -1,11 +1,17 @@
-program sendmail;
+unit sendmail;
 
-{$mode objfpc}{$H+}
+{$mode objfpc}{$H+}   
+
+interface
 
 uses
   sockets, // работа с Sockets
   resolve, // Преобразование доменных имен в IP адреса и обратно с помощью DNS
   base64; // base64 кодирование/декодирование
+
+function SendMail(const SmtpServer, SenderEmail, Password, RecipientEmail, MailSubject, MailBody: string; SmtpPort: Integer): Boolean;
+
+implementation
 
 function SendMail(const SmtpServer, SenderEmail, Password, RecipientEmail, MailSubject, MailBody: string; SmtpPort: Integer): Boolean;
 var
@@ -121,9 +127,4 @@ begin
   Result := True; // Отправка прошла успешно
 end;
 
-begin
-  if SendMail('smtp.rambler.ru', 'yourlogin@rambler.ru', 'yourpassword', 'adressto@mail.com', 'Test Mail', 'This is a test email sent using sockets.', 25) then
-    WriteLn('Mail sent successfully.')
-  else
-    WriteLn('Error sending mail.');
 end.

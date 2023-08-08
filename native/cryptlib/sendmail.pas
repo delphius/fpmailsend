@@ -1,11 +1,16 @@
-program sendmail;
+unit sendmail;
 
 {$mode objfpc}{$H+}
+
+interface
 
 uses
   SysUtils,
   base64,
-  cryptlib;
+  cryptlib
+  ;
+
+implementation
 
 const
   MailHost = 'smtp.gmail.com';
@@ -449,10 +454,11 @@ begin
 end;
 
 //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
+function SendMail(const SmtpServer, SenderEmail, Password, RecipientEmail, MailSubject, MailBody: string;
+  SmtpPort: Integer): Boolean;
 var
   RetVal: integer;
   sBody, sErr: string;
-
 begin
 
   sBody := '';
@@ -470,7 +476,7 @@ begin
     sErr);
 
   if RetVal < 0 then
-    Writeln('ERROR: ', sErr)
+    Result:=False
   else
-    Writeln('Email Sent OK');
+    Result:=True;
 end.
