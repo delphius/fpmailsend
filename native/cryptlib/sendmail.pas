@@ -350,6 +350,8 @@ begin
     end
     else writeln('Session established.');
 
+    Sleep(100); // Wait for some time for hello message from server
+
     // Discard initial response created by connecting
     RetVal := TLSPop(hSess, sErr, sReply, 0);
     if RetVal < 0 then
