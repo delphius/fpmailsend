@@ -16,7 +16,6 @@ function SendMail(const SmtpServer, SenderEmail, Password, RecipientEmail, MailS
 implementation
 
 const
-  TCP_PORT = 465; // TLS
   SMTP_RESPONSE_TIMEOUT = 5000; // 5 sec response timeout
 
 //================================================================================
@@ -155,7 +154,7 @@ var
 begin
   BufLen := 255;
   GetMem(cBuff, BufLen);
-
+  BytesReply:=0;
   // Recover unexpected data
   if nRetLn < 1 then
   begin
@@ -259,7 +258,7 @@ begin
     Result := -24;
     Exit;
   end;
-
+  BytesSent:=0;
   // Push data
   RetVal := cryptPushData(hCrypt, @sSend[1], Length(sSend), BytesSent);
   if RetVal <> CRYPT_OK then
@@ -296,7 +295,8 @@ begin
 end;
 
 //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
-function SMTPTLS(const sSrvr, sUser, sPass, sFrom, sTo, sBody: string; var sErr: string): integer;
+function SMTPTLS(const sSrvr, sUser, sPass, sFrom, sTo, sBody: string; var sErr: string;
+  aTCPPort: Integer = 465): integer;
 var
   RetVal, FuncRet, hSess: integer;
   sSend, sReply: string;
@@ -305,7 +305,7 @@ begin
     Exit(-2);
 
   FuncRet := 1;
-
+  hSess:=0;
   while True do
   begin
     // Create the session
@@ -331,14 +331,14 @@ begin
     else writeln('SERVER_NAME: ' + sSrvr);
 
     // Specify the Port
-    RetVal := cryptSetAttribute(hSess, CRYPT_SESSINFO_SERVER_PORT, TCP_PORT);
+    RetVal := cryptSetAttribute(hSess, CRYPT_SESSINFO_SERVER_PORT, aTCPPort);
     if RetVal <> CRYPT_OK then
     begin
       sErr := 'SERVER_PORT ERROR: ' + Err2Str(RetVal) + ' ' + ErrExStr(hSess);
       FuncRet := -8;
       Break;
     end
-    else writeln('SERVER_PORT: ' + IntToStr(TCP_PORT));
+    else writeln('SERVER_PORT: ' + IntToStr(aTCPPort));
 
     // Activate the session
     RetVal := cryptSetAttribute(hSess, CRYPT_SESSINFO_ACTIVE, 1);
@@ -351,7 +351,8 @@ begin
     else writeln('Session established.');
 
     Sleep(100); // Wait for some time for hello message from server
-
+    
+    sReply:=EmptyStr;
     // Discard initial response created by connecting
     RetVal := TLSPop(hSess, sErr, sReply, 0);
     if RetVal < 0 then
@@ -458,15 +459,21 @@ function SendMail(const SmtpServer, SenderEmail, Password, RecipientEmail, MailS
   SmtpPort: Integer): Boolean;
 var
   RetVal: integer;
-  sErr: string;
+  sErr, aMailBody: string;
 begin
+  aMailBody:='Subject: '+MailSubject+#13#10+
+    'From: <' + SenderEmail + '>' + #13#10 +
+    'To: <' + RecipientEmail + '>' + #13#10 +
+    MailBody;
+  sErr:=EmptyStr;
   RetVal := SMTPTLS(SmtpServer,
     SenderEmail,
     Password,
     SenderEmail,
     RecipientEmail,
-    MailBody,
-    sErr);
+    aMailBody,
+    sErr,
+    SmtpPort);
 
   if RetVal < 0 then
     Result:=False
