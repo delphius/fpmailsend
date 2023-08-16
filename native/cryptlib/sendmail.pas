@@ -154,7 +154,7 @@ var
 begin
   BufLen := 255;
   GetMem(cBuff, BufLen);
-
+  BytesReply:=0;
   // Recover unexpected data
   if nRetLn < 1 then
   begin
@@ -258,7 +258,7 @@ begin
     Result := -24;
     Exit;
   end;
-
+  BytesSent:=0;
   // Push data
   RetVal := cryptPushData(hCrypt, @sSend[1], Length(sSend), BytesSent);
   if RetVal <> CRYPT_OK then
@@ -305,7 +305,7 @@ begin
     Exit(-2);
 
   FuncRet := 1;
-
+  hSess:=0;
   while True do
   begin
     // Create the session
@@ -351,7 +351,8 @@ begin
     else writeln('Session established.');
 
     Sleep(100); // Wait for some time for hello message from server
-
+    
+    sReply:=EmptyStr;
     // Discard initial response created by connecting
     RetVal := TLSPop(hSess, sErr, sReply, 0);
     if RetVal < 0 then
@@ -458,14 +459,19 @@ function SendMail(const SmtpServer, SenderEmail, Password, RecipientEmail, MailS
   SmtpPort: Integer): Boolean;
 var
   RetVal: integer;
-  sErr: string;
+  sErr, aMailBody: string;
 begin
+  aMailBody:='Subject: '+MailSubject+#13#10+
+    'From: <' + SenderEmail + '>' + #13#10 +
+    'To: <' + RecipientEmail + '>' + #13#10 +
+    MailBody;
+  sErr:=EmptyStr;
   RetVal := SMTPTLS(SmtpServer,
     SenderEmail,
     Password,
     SenderEmail,
     RecipientEmail,
-    MailBody,
+    aMailBody,
     sErr,
     SmtpPort);
 
