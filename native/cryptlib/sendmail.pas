@@ -16,7 +16,6 @@ function SendMail(const SmtpServer, SenderEmail, Password, RecipientEmail, MailS
 implementation
 
 const
-  TCP_PORT = 465; // TLS
   SMTP_RESPONSE_TIMEOUT = 5000; // 5 sec response timeout
 
 //================================================================================
@@ -296,7 +295,8 @@ begin
 end;
 
 //¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤
-function SMTPTLS(const sSrvr, sUser, sPass, sFrom, sTo, sBody: string; var sErr: string): integer;
+function SMTPTLS(const sSrvr, sUser, sPass, sFrom, sTo, sBody: string; var sErr: string;
+  aTCPPort: Integer = 465): integer;
 var
   RetVal, FuncRet, hSess: integer;
   sSend, sReply: string;
@@ -331,14 +331,14 @@ begin
     else writeln('SERVER_NAME: ' + sSrvr);
 
     // Specify the Port
-    RetVal := cryptSetAttribute(hSess, CRYPT_SESSINFO_SERVER_PORT, TCP_PORT);
+    RetVal := cryptSetAttribute(hSess, CRYPT_SESSINFO_SERVER_PORT, aTCPPort);
     if RetVal <> CRYPT_OK then
     begin
       sErr := 'SERVER_PORT ERROR: ' + Err2Str(RetVal) + ' ' + ErrExStr(hSess);
       FuncRet := -8;
       Break;
     end
-    else writeln('SERVER_PORT: ' + IntToStr(TCP_PORT));
+    else writeln('SERVER_PORT: ' + IntToStr(aTCPPort));
 
     // Activate the session
     RetVal := cryptSetAttribute(hSess, CRYPT_SESSINFO_ACTIVE, 1);
@@ -466,7 +466,8 @@ begin
     SenderEmail,
     RecipientEmail,
     MailBody,
-    sErr);
+    sErr,
+    SmtpPort);
 
   if RetVal < 0 then
     Result:=False
